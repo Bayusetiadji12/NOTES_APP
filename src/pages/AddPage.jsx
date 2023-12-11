@@ -1,29 +1,42 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { addNote } from "../utils/local";
+import { addNote } from "../utils/network";
 
 const AddPage = () => {
-    const [title, setTitle] = React.useState("");
-    const [description, setDescription] = React.useState("");
+    const [title, setTitle] = useState("");
+    const [body, setBody] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
+    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
     
     function onTitleHandler(event) {
         setTitle(event.target.value);
+        checkInputs(event.target.value, body);
     }
 
     function onDescriptionHandler(event) {
-        setDescription(event.target.value);
+        setBody(event.target.value);
+        checkInputs(title, event.target.value);
     }
-    
+
+    const checkInputs = (title, body) => {
+        if (title.trim() === "" || body.trim() === "") {
+            setIsButtonDisabled(true);
+        } else {
+            setIsButtonDisabled(false);
+        }
+    }
+
+    const onAddNotetHandler = async ({ title, body }) => {
+        const { error } = await addNote({ title, body });
+
+        if(!error) navigate("/");
+        else setErrorMessage("Gagal menambahkan catatan");
+    }
+
     function onSubmitHandler(event) {
         event.preventDefault();
-        const newNote = {
-            title: title,
-            description: description,
-            createdAt: new Date(),
-        };
-        addNote(newNote);
-        navigate("/");
+        onAddNotetHandler({ title: title, body: body, createdAt: new Date() });
     }
 
     return(
@@ -37,7 +50,7 @@ const AddPage = () => {
                 <form onSubmit={onSubmitHandler}>
                     <div className="sm:col-span-4">
                         <label
-                            for="title"
+                            htmlFor="title"
                             className="block text-amber-800 font-semibold">
                             Title
                         </label>
@@ -51,7 +64,7 @@ const AddPage = () => {
                     </div>
                     <div className="mt-2 sm:col-span-4">
                         <label
-                            for="description"
+                            htmlFor="description"
                             className="block text-amber-800 font-semibold">
                             Description
                         </label>
@@ -76,9 +89,12 @@ const AddPage = () => {
                         </Link>
                         <button
                             type="submit"
-                            className="bg-amber-900 text-white text-sm px-4 py-1 font-semibold leading-6 text-white shadow-md border rounded-lg hover:bg-white hover:text-amber-900">
+                            disabled={isButtonDisabled}
+                            className={`bg-amber-900 text-white text-sm px-4 py-1 font-semibold leading-6 shadow-md border rounded-lg hover:bg-white hover:text-amber-900 
+                            ${isButtonDisabled ? 'bg-gray-400 cursor-not-allowed' : ''}`}>
                             Save
                         </button>
+                        {errorMessage && <div className="error">{errorMessage}</div>}
                     </div>
                 </form>
             </div>

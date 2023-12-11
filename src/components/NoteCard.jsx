@@ -15,10 +15,10 @@ const NoteCard = ({ note, onDelete }) => {
       </div>
       <div className="group relative">
         <time dateTime={note.datetime} className="text-amber-800 text-xs">
-          {note.createdAt.toLocaleDateString()}
+          {new Date(note.createdAt).toLocaleDateString()}
         </time>
         <p className="text-justify mt-5 line-clamp-6 text-sm leading-6 text-gray-600">
-          {note.description}
+          {note.body}
         </p>
       </div>
     </article>

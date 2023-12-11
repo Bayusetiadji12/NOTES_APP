@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-
 import { Link } from "react-router-dom";
 import NoteList from "../components/NoteList";
 import SearchNote from "../components/SearchNote";
 import AddNote from "../components/AddNote";
-import { getNotes, deleteNote } from "../utils/local";
+import { getNotes, deleteNote } from "../utils/network";
+
 
 const Home = () => {
   const [notes, setNotes] = useState([]);
@@ -12,8 +12,9 @@ const Home = () => {
 
   useEffect(() => {
     const fetchNotes = async () => {
-      const data = await getNotes();
-      setNotes(data);
+      const { error, data } = await getNotes();
+      if(error) setNotes({});
+      else setNotes(data);
     };
     fetchNotes();
   }, [keyword]);
@@ -26,9 +27,10 @@ const Home = () => {
     return note.title.toLowerCase().includes(keyword.toLocaleLowerCase());
   });
 
-  const onDeleteHandler = (id) => {
-    deleteNote(id);
-    setNotes(getNotes());
+  const onDeleteHandler = async (id) => {
+    await deleteNote(id);
+    const updatedNotes = await getNotes();
+    setNotes(updatedNotes.data);
   };
 
   return (
@@ -36,7 +38,7 @@ const Home = () => {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:text-center">
           <h2 className="text-3xl font-bold text-amber-800">
-            NoteBook
+            Note List
           </h2>
         </div>
         <div className="mx-auto pt-5 mb-3 xl:w-96">
